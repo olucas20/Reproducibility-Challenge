@@ -2,7 +2,6 @@ import argparse
 import Data_augmentation as DA
 import Encoder
 import Magnatagatune
-import Trainer
 import torch
 
 from simclr import SimCLR
@@ -18,7 +17,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', default=10, type=int)
     args = parser.parse_args()
     
-    #DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     transformations = [(DA.RandomResize, 1),
                        (DA.PolInversion, 0.8),
@@ -35,10 +34,21 @@ if __name__ == "__main__":
     
     train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True)
     valid_loader = DataLoader(valid_dataset, args.batch_size, shuffle=False)
-    enc = Encoder.Encoder()
-    model = SimCLR(enc, 64, 512)
-    model.train()
+    
+    model = Encoder.Encoder()
+    #model = SimCLR(enc, 64, 512)
+    #model.train()
+    
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-4)
+    model.fit(train_dataloader=train_loader,
+              test_dataloader=valid_loader, 
+              optimizer=optimizer,
+              epochs=5,
+              device=DEVICE)
+    
+    
+    
+    
     """
     Trainer.fit(train_dataloader = train_loader,
               test_dataloader = valid_loader,

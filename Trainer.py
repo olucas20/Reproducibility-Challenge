@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from tqdm import tqdm
+import torch
 
 class BasicModel(nn.Module):
     def __init__(self):
@@ -14,7 +15,7 @@ class BasicModel(nn.Module):
         raise NotImplementedError
 
 
-    def fit(self, train_dataloader, test_dataloader, optimizer, epochs, device, plot_loss=False):
+    def fit(self, train_dataloader, test_dataloader, optimizer, epochs, device, plot_loss=True):
         train_losses = []
         test_losses = []
         for epoch in range(epochs):
@@ -69,20 +70,21 @@ class BasicModel(nn.Module):
 
     def predict(self, test_dataloader, device):
         self.eval()
+        criterion = nn.BCEWithLogitsLoss()
         test_loss = 0
-        correct = 0
+        #correct = 0
         with torch.no_grad():
             for data, target in test_dataloader:
                 data, target = data.to(device), target.to(device)
 
                 output = self(data)
-                loss = F.cross_entropy(output, target)
+                loss = criterion(output, target)
                 test_loss += loss.item()
                 pred = output.data.max(1, keepdim=True)[1]
-                correct += pred.eq(target.data.view_as(pred)).sum()
+                #correct += pred.eq(target.data.view_as(pred)).sum()
 
         test_loss /= len(test_dataloader.dataset)
-        accuracy = 100. * correct / len(test_dataloader.dataset)
+        #accuracy = 100. * correct / len(test_dataloader.dataset)
 
         return test_loss
 
